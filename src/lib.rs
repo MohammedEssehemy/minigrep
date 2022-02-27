@@ -1,17 +1,26 @@
 use std::env;
 use std::error::Error;
 use std::fs;
+extern crate colored;
+use colored::*;
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    println!(
+        "Searching for `{query}` in `{file}`",
+        query = config.query.blue(),
+        file = config.filename.blue()
+    );
     let contents = fs::read_to_string(config.filename)?;
     let results = if config.case_sensitive {
         search(&config.query, &contents)
     } else {
         search_case_insensitive(&config.query, &contents)
     };
-
-    for line in results {
-        println!("{}", line);
+    if results.is_empty() {
+        println!("{}", "No match found".red());
+    } else {
+        println!("{}", "Matches:".bold().underline());
+        println!("{}", results.join("\n").cyan());
     }
     Ok(())
 }
@@ -23,17 +32,8 @@ pub struct Config {
 }
 
 impl Config {
-    // pub fn from(args: &[String]) -> Result<Config, &str> {
-    //     if args.len() < 3 {
-    //         return Err("not enough arguments");
-    //     }
-    //     let query = args[1].clone();
-    //     let filename = args[2].clone();
-    //     let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
-
-    //     Ok(Config { query, filename, case_sensitive })
-    // }
     pub fn from<T: Iterator<Item = String>>(mut args: T) -> Result<Config, &'static str> {
+        // skip first input which is program name
         args.next();
         let query = match args.next() {
             Some(arg) => arg,
@@ -96,14 +96,15 @@ Duct";
 
     #[test]
     fn case_insensitive() {
-        let query = "DuCt";
+        let query = "rUst";
         let contents = "\
 Rust:
 safe, fast, productive.
-Pick three.";
+Pick three.
+Trust me.";
 
         assert_eq!(
-            vec!["safe, fast, productive."],
+            vec!["Rust:", "Trust me."],
             search_case_insensitive(query, contents)
         );
     }
