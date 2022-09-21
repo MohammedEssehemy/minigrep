@@ -1,7 +1,7 @@
 use std::env;
 use std::process;
 
-use minigrep_essehemy::Config;
+use minigrep_essehemy::config::Config;
 use minigrep_essehemy::run;
 
 fn main() {

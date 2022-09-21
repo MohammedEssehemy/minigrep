@@ -1,8 +1,10 @@
-use std::env;
+extern crate colored;
+pub mod config;
+
 use std::error::Error;
 use std::fs;
-extern crate colored;
 use colored::*;
+use config::Config;
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     println!(
@@ -23,34 +25,6 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         println!("{}", results.join("\n").cyan());
     }
     Ok(())
-}
-#[derive(Debug)]
-pub struct Config {
-    pub query: String,
-    pub filename: String,
-    pub case_sensitive: bool,
-}
-
-impl Config {
-    pub fn from<T: Iterator<Item = String>>(mut args: T) -> Result<Config, &'static str> {
-        // skip first input which is program name
-        args.next();
-        let query = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get a query string"),
-        };
-        let filename = match args.next() {
-            Some(arg) => arg,
-            None => return Err("Didn't get a file name"),
-        };
-        let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
-
-        Ok(Config {
-            query,
-            filename,
-            case_sensitive,
-        })
-    }
 }
 
 fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
